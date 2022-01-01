@@ -83,4 +83,5 @@
       loop: "{{ fsx_users.split(',') }}"
       loop_control:
         index_var: current
-
+      tags:
+        - system
