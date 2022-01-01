@@ -1,0 +1,86 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: ecs-linux-fsx-ami
+  hosts: all
+  become: yes
+
+  vars:
+    fsx_ip_address: "{{ lookup('env', 'FSX_IP_ADDRESS') | default('127.0.0.1', True) }}"
+    fsx_file_share: "{{ lookup('env', 'FSX_FILE_SHARE') | default('share', True) }}"
+    fsx_smb_version: "{{ lookup('env', 'FSX_SMB_VERSION') | default('3.0', True) }}"
+    fsx_creds: "{{ lookup('env', 'FSX_CREDS') | default('/home/ec2-user/.fsx-credentials', True) }}"
+    fsx_mount_point: "{{ lookup('env', 'FSX_MOUNT_POINT') | default('/mnt/fsx', True) }}"
+    fsx_cifs_max_buf_size: "{{ lookup('env', 'FSX_CIFS_MAX_BUF_SIZE') | default('130048', True) }}"
+    fsx_username: "{{ lookup('env', 'FSX_USERNAME') | default('linux-fsx', True) }}"
+    fsx_password: "{{ lookup('env', 'FSX_PASSWORD') }}"
+    fsx_domain: "{{ lookup('env', 'FSX_DOMAIN') }}"
+    fsx_users: "{{ lookup('env', 'FSX_USERS') | default('sftp-user', True) }}"
+    fsx_uid_start: 1001
+
+  tasks:
+
+    - name: Update system
+      async: 3600
+      poll: 5
+      vars:
+        ansible_python_interpreter: /usr/bin/python
+      ansible.builtin.yum:
+        state: latest
+        name: "*"
+        update_cache: yes
+        update_only: yes
+      tags:
+        - system
+
+    - name: Install cifs-utils
+      vars:
+        ansible_python_interpreter: /usr/bin/python
+      ansible.builtin.yum:
+        state: present
+        name: cifs-utils
+      tags:
+        - system
+
+    - name: Create FSx mount point
+      ansible.builtin.file:
+        path: "{{ fsx_mount_point }}"
+        state: directory
+        owner: root
+        group: root
+        recurse: yes
+        mode: "0755"
+      tags:
+        - system
+
+    - name: Create user directories
+      ansible.builtin.file:
+        path: "{{ fsx_mount_point }}/{{ item }}"
+        state: directory
+        owner: "{{ fsx_uid_start + current }}"
+        group: "{{ fsx_uid_start + current }}"
+        recurse: yes
+        mode: "0755"
+      loop: "{{ fsx_users.split(',') }}"
+      loop_control:
+        index_var: current
+      tags:
+        - system
+
+    - name: Set FSx credentials
+      ansible.builtin.template:
+        owner: ec2-user
+        group: ec2-user
+        mode: "0400"
+        src: "fsx-credentials.j2"
+        dest: "{{ fsx_creds }}"
+      tags:
+        - system
+
+    - name: Configure /etc/fstab
+      ansible.builtin.lineinfile:
+        path: /etc/fstab
+        line: "//{{ fsx_ip_address }}/{{ fsx_file_share }} {{ fsx_mount_point }}/{{ item }} cifs vers={{ fsx_smb_version }},sec=ntlmsspi,cred={{ fsx_creds }},rsize={{ fsx_cifs_max_buf_size }},wsize={{ fsx_cifs_max_buf_size }},cache=none,_netdev,uid={{ fsx_uid_start + current }},gid={{ fsx_uid_start + current }} 0 0"
+      loop: "{{ fsx_users.split(',') }}"
+      loop_control:
+        index_var: current
+
