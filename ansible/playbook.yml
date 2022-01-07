@@ -15,7 +15,7 @@
     fsx_password: "{{ lookup('env', 'FSX_PASSWORD') }}"
     fsx_domain: "{{ lookup('env', 'FSX_DOMAIN') }}"
     fsx_users: "{{ lookup('env', 'FSX_USERS') | default('sftp-user', True) }}"
-    fsx_uid_start: 1001
+    fsx_uid_start: "{{ lookup('env', 'FSX_UID_START') | default('1001', True) }}"
 
   tasks:
 

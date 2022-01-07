@@ -64,6 +64,11 @@ variable "fsx_users" {
   default = env("FSX_USERS")
 }
 
+variable "fsx_users" {
+  type    = string
+  default = env("FSX_UID_START")
+}
+
 data "amazon-ami" "amzn_ecs_optimized" {
   filters = {
     name                = "amzn-ami-*-amazon-ecs-optimized"
