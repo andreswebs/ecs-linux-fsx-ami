@@ -2,7 +2,7 @@
 
 Packer template for an Amazon Linux 2 ECS-optimized AMI with FSx Windows File System mounts for a set of system UIDs.
 
-This is intended to be used as part of the following architecture (see: Terraform module ):
+This is intended to be used as part of the following architecture (see Terraform module [andreswebs/ecs-fsx-sftp/aws](https://registry.terraform.io/modules/andreswebs/ecs-fsx-sftp/aws/latest)):
 
 ![Example SFTP service](https://raw.githubusercontent.com/andreswebs/terraform-aws-ecs-fsx-sftp/main/docs/img/ecs-fsx-sftp.svg)
 
