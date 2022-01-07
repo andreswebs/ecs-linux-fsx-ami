@@ -64,7 +64,7 @@ variable "fsx_users" {
   default = env("FSX_USERS")
 }
 
-variable "fsx_users" {
+variable "fsx_uid_start" {
   type    = string
   default = env("FSX_UID_START")
 }
@@ -119,7 +119,7 @@ build {
 
   provisioner "ansible" {
 
-    playbook_file = "ansible/playbook.yml"
+    playbook_file = "${path.root}/ansible/playbook.yml"
     user          = "ec2-user"
     use_sftp      = false
 
