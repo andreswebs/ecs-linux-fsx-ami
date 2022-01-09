@@ -88,15 +88,16 @@ locals {
 
 source "amazon-ebs" "this" {
 
-  ami_name                 = local.ami_name
-  ami_users                = local.ami_users
-  instance_type            = "m5a.large"
-  subnet_id                = var.subnet_id
-  ssh_username             = "ec2-user"
-  source_ami               = data.amazon-ami.amzn_ecs_optimized.id
-  user_data_file           = "${local.scripts}/userdata.sh"
-  ssh_file_transfer_method = "scp"
-  communicator             = "ssh"
+  ami_name                    = local.ami_name
+  ami_users                   = local.ami_users
+  instance_type               = "m5a.large"
+  subnet_id                   = var.subnet_id
+  ssh_username                = "ec2-user"
+  source_ami                  = data.amazon-ami.amzn_ecs_optimized.id
+  user_data_file              = "${local.scripts}/userdata.sh"
+  ssh_file_transfer_method    = "scp"
+  communicator                = "ssh"
+  # associate_public_ip_address = true
 
   run_tags = {
     Name = "packer-ami-creation-ec2"
